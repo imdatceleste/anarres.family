@@ -1,34 +1,33 @@
 # frozen_string_literal: true
 
 class Mastodon::RedisConfiguration
+  DEFAULTS = {
+    host: 'localhost',
+    port: 6379,
+    db: 0,
+  }.freeze
+
   def base
-    @base ||= {
-      url: setup_base_redis_url,
-      driver: driver,
-      namespace: base_namespace,
-    }
+    @base ||= setup_config(prefix: nil, defaults: DEFAULTS)
+              .merge(namespace: base_namespace)
   end
 
   def sidekiq
-    @sidekiq ||= {
-      url: setup_prefixed_redis_url(:sidekiq),
-      driver: driver,
-      namespace: sidekiq_namespace,
-    }
+    @sidekiq ||= setup_config(prefix: 'SIDEKIQ_')
+                 .merge(namespace: sidekiq_namespace)
   end
 
   def cache
-    @cache ||= {
-      url: setup_prefixed_redis_url(:cache),
-      driver: driver,
-      namespace: cache_namespace,
-      expires_in: 10.minutes,
-      connect_timeout: 5,
-      pool: {
-        size: Sidekiq.server? ? Sidekiq[:concurrency] : Integer(ENV['MAX_THREADS'] || 5),
-        timeout: 5,
-      },
-    }
+    @cache ||= setup_config(prefix: 'CACHE_')
+               .merge({
+                 namespace: cache_namespace,
+                 expires_in: 10.minutes,
+                 connect_timeout: 5,
+                 pool: {
+                   size: Sidekiq.server? ? Sidekiq[:concurrency] : Integer(ENV['MAX_THREADS'] || 5),
+                   timeout: 5,
+                 },
+               })
   end
 
   private
@@ -55,42 +54,67 @@ class Mastodon::RedisConfiguration
     namespace ? "#{namespace}_cache" : 'cache'
   end
 
-  def setup_base_redis_url
-    url = ENV.fetch('REDIS_URL', nil)
-    return url if url.present?
+  def setup_config(prefix: nil, defaults: {})
+    prefix = "#{prefix}REDIS_"
 
-    user     = ENV.fetch('REDIS_USER', '')
-    password = ENV.fetch('REDIS_PASSWORD', '')
-    host     = ENV.fetch('REDIS_HOST', 'localhost')
-    port     = ENV.fetch('REDIS_PORT', 6379)
-    db       = ENV.fetch('REDIS_DB', 0)
+    url      = ENV.fetch("#{prefix}URL", nil)
+    user     = ENV.fetch("#{prefix}USER", nil)
+    password = ENV.fetch("#{prefix}PASSWORD", nil)
+    host     = ENV.fetch("#{prefix}HOST", defaults[:host])
+    port     = ENV.fetch("#{prefix}PORT", defaults[:port])
+    db       = ENV.fetch("#{prefix}DB", defaults[:db])
 
-    construct_uri(host, port, db, user, password)
+    return { url:, driver: } if url
+
+    sentinel_options = setup_sentinels(prefix, default_user: user, default_password: password)
+
+    if sentinel_options.present?
+      host = sentinel_options[:name]
+      port = nil
+      db ||= 0
+    end
+
+    url = construct_uri(host, port, db, user, password)
+
+    if url.present?
+      { url:, driver: }.merge(sentinel_options)
+    else
+      # Fall back to base config, which has defaults for the URL
+      # so this cannot lead to endless recursion.
+      base
+    end
   end
 
-  def setup_prefixed_redis_url(prefix)
-    prefix = "#{prefix.to_s.upcase}_"
-    url = ENV.fetch("#{prefix}REDIS_URL", nil)
+  def setup_sentinels(prefix, default_user: nil, default_password: nil)
+    name              = ENV.fetch("#{prefix}SENTINEL_MASTER", nil)
+    sentinel_port     = ENV.fetch("#{prefix}SENTINEL_PORT", 26_379)
+    sentinel_list     = ENV.fetch("#{prefix}SENTINELS", nil)
+    sentinel_username = ENV.fetch("#{prefix}SENTINEL_USERNAME", default_user)
+    sentinel_password = ENV.fetch("#{prefix}SENTINEL_PASSWORD", default_password)
 
-    return url if url.present?
+    sentinels = parse_sentinels(sentinel_list, default_port: sentinel_port)
 
-    user     = ENV.fetch("#{prefix}REDIS_USER", nil)
-    password = ENV.fetch("#{prefix}REDIS_PASSWORD", nil)
-    host     = ENV.fetch("#{prefix}REDIS_HOST", nil)
-    port     = ENV.fetch("#{prefix}REDIS_PORT", nil)
-    db       = ENV.fetch("#{prefix}REDIS_DB", nil)
-
-    if host.nil?
-      base[:url]
+    if name.present? && sentinels.present?
+      { name:, sentinels:, sentinel_username:, sentinel_password: }
     else
-      construct_uri(host, port, db, user, password)
+      {}
     end
   end
 
   def construct_uri(host, port, db, user, password)
+    return nil if host.blank?
+
     Addressable::URI.parse("redis://#{host}:#{port}/#{db}").tap do |uri|
       uri.user = user if user.present?
       uri.password = password if password.present?
     end.normalize.to_str
+  end
+
+  def parse_sentinels(sentinels_string, default_port: 26_379)
+    (sentinels_string || '').split(',').map do |sentinel|
+      host, port = sentinel.split(':')
+      port = (port || default_port).to_i
+      { host: host, port: port }
+    end.presence
   end
 end

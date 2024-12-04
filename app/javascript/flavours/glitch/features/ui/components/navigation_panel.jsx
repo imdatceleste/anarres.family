@@ -36,7 +36,6 @@ import { timelinePreview, trendsEnabled } from 'flavours/glitch/initial_state';
 import { transientSingleColumn } from 'flavours/glitch/is_mobile';
 import { canManageReports, canViewAdminDashboard } from 'flavours/glitch/permissions';
 import { selectUnreadNotificationGroupsCount } from 'flavours/glitch/selectors/notifications';
-import { selectUseGroupedNotifications } from 'flavours/glitch/selectors/settings';
 import { preferencesLink } from 'flavours/glitch/utils/backend_links';
 
 import ColumnLink from './column_link';
@@ -66,19 +65,17 @@ const messages = defineMessages({
 });
 
 const NotificationsLink = () => {
-  const optedInGroupedNotifications = useSelector(selectUseGroupedNotifications);
-  const count = useSelector(state => state.getIn(['local_settings', 'notifications', 'tab_badge']) ? state.getIn(['notifications', 'unread']) : 0);
+  const count = useSelector(selectUnreadNotificationGroupsCount);
+  const showCount = useSelector(state => state.getIn(['local_settings', 'notifications', 'tab_badge']));
   const intl = useIntl();
-
-  const newCount = useSelector(selectUnreadNotificationGroupsCount);
 
   return (
     <ColumnLink
       key='notifications'
       transparent
       to='/notifications'
-      icon={<IconWithBadge id='bell' icon={NotificationsIcon} count={optedInGroupedNotifications ? newCount : count} className='column-link__icon' />}
-      activeIcon={<IconWithBadge id='bell' icon={NotificationsActiveIcon} count={optedInGroupedNotifications ? newCount : count} className='column-link__icon' />}
+      icon={<IconWithBadge id='bell' icon={NotificationsIcon} count={showCount ? count : 0} className='column-link__icon' />}
+      activeIcon={<IconWithBadge id='bell' icon={NotificationsActiveIcon} count={showCount ? count : 0} className='column-link__icon' />}
       text={intl.formatMessage(messages.notifications)}
     />
   );
@@ -125,14 +122,17 @@ class NavigationPanel extends Component {
 
     let banner = undefined;
 
-    if(transientSingleColumn)
-      banner = (<div className='switch-to-advanced'>
-        {intl.formatMessage(messages.openedInClassicInterface)}
-        {" "}
-        <a href={`/deck${location.pathname}`} className='switch-to-advanced__toggle'>
-          {intl.formatMessage(messages.advancedInterface)}
-        </a>
-      </div>);
+    if (transientSingleColumn) {
+      banner = (
+        <div className='switch-to-advanced'>
+          {intl.formatMessage(messages.openedInClassicInterface)}
+          {" "}
+          <a href={`/deck${location.pathname}`} className='switch-to-advanced__toggle'>
+            {intl.formatMessage(messages.advancedInterface)}
+          </a>
+        </div>
+      );
+    }
 
     return (
       <div className='navigation-panel'>
@@ -142,54 +142,58 @@ class NavigationPanel extends Component {
           </div>
         }
 
-        {signedIn && (
-          <>
-            <ColumnLink transparent to='/home' icon='home' iconComponent={HomeIcon} activeIconComponent={HomeActiveIcon} text={intl.formatMessage(messages.home)} />
-            <NotificationsLink />
-            <FollowRequestsLink />
-          </>
-        )}
+        <div className='navigation-panel__menu'>
+          {signedIn && (
+            <>
+              <ColumnLink transparent to='/home' icon='home' iconComponent={HomeIcon} activeIconComponent={HomeActiveIcon} text={intl.formatMessage(messages.home)} />
+              <NotificationsLink />
+              <FollowRequestsLink />
+            </>
+          )}
 
-        {trendsEnabled ? (
-          <ColumnLink transparent to='/explore' icon='explore' iconComponent={ExploreIcon} activeIconComponent={ExploreActiveIcon} text={intl.formatMessage(messages.explore)} />
-        ) : (
-          <ColumnLink transparent to='/search' icon='search' iconComponent={SearchIcon} text={intl.formatMessage(messages.search)} />
-        )}
+          {trendsEnabled ? (
+            <ColumnLink transparent to='/explore' icon='explore' iconComponent={ExploreIcon} activeIconComponent={ExploreActiveIcon} text={intl.formatMessage(messages.explore)} />
+          ) : (
+            <ColumnLink transparent to='/search' icon='search' iconComponent={SearchIcon} text={intl.formatMessage(messages.search)} />
+          )}
 
-        {(signedIn || timelinePreview) && (
-          <ColumnLink transparent to='/public/local' isActive={this.isFirehoseActive} icon='globe' iconComponent={PublicIcon} text={intl.formatMessage(messages.firehose)} />
-        )}
+          {(signedIn || timelinePreview) && (
+            <ColumnLink transparent to='/public/local' isActive={this.isFirehoseActive} icon='globe' iconComponent={PublicIcon} text={intl.formatMessage(messages.firehose)} />
+          )}
 
-        {!signedIn && (
-          <div className='navigation-panel__sign-in-banner'>
+          {!signedIn && (
+            <div className='navigation-panel__sign-in-banner'>
+              <hr />
+              { disabledAccountId ? <DisabledAccountBanner /> : <SignInBanner /> }
+            </div>
+          )}
+
+          {signedIn && (
+            <>
+              <ColumnLink transparent to='/conversations' icon='at' iconComponent={MailIcon} activeIconComponent={MailActiveIcon} text={intl.formatMessage(messages.direct)} />
+              <ColumnLink transparent to='/bookmarks' icon='bookmarks' iconComponent={BookmarksIcon} activeIconComponent={BookmarksActiveIcon} text={intl.formatMessage(messages.bookmarks)} />
+              <ColumnLink transparent to='/favourites' icon='star' iconComponent={StarIcon} activeIconComponent={StarActiveIcon} text={intl.formatMessage(messages.favourites)} />
+              <ColumnLink transparent to='/lists' icon='list-ul' iconComponent={ListAltIcon} activeIconComponent={ListAltActiveIcon} text={intl.formatMessage(messages.lists)} />
+
+              <ListPanel />
+
+              <hr />
+
+              {!!preferencesLink && <ColumnLink transparent href={preferencesLink} icon='cog' iconComponent={SettingsIcon} text={intl.formatMessage(messages.preferences)} />}
+              <ColumnLink transparent onClick={onOpenSettings} icon='cogs' iconComponent={AdministrationIcon} text={intl.formatMessage(messages.app_settings)} />
+
+              {canManageReports(permissions) && <ColumnLink optional transparent href='/admin/reports' icon='flag' iconComponent={ModerationIcon} text={intl.formatMessage(messages.moderation)} />}
+              {canViewAdminDashboard(permissions) && <ColumnLink optional transparent href='/admin/dashboard' icon='tachometer' iconComponent={AdministrationIcon} text={intl.formatMessage(messages.administration)} />}
+            </>
+          )}
+
+          <div className='navigation-panel__legal'>
             <hr />
-            { disabledAccountId ? <DisabledAccountBanner /> : <SignInBanner /> }
+            <ColumnLink transparent to='/about' icon='ellipsis-h' iconComponent={MoreHorizIcon} text={intl.formatMessage(messages.about)} />
           </div>
-        )}
-
-        {signedIn && (
-          <>
-            <ColumnLink transparent to='/conversations' icon='at' iconComponent={MailIcon} activeIconComponent={MailActiveIcon} text={intl.formatMessage(messages.direct)} />
-            <ColumnLink transparent to='/bookmarks' icon='bookmarks' iconComponent={BookmarksIcon} activeIconComponent={BookmarksActiveIcon} text={intl.formatMessage(messages.bookmarks)} />
-            <ColumnLink transparent to='/favourites' icon='star' iconComponent={StarIcon} activeIconComponent={StarActiveIcon} text={intl.formatMessage(messages.favourites)} />
-            <ColumnLink transparent to='/lists' icon='list-ul' iconComponent={ListAltIcon} activeIconComponent={ListAltActiveIcon} text={intl.formatMessage(messages.lists)} />
-
-            <ListPanel />
-
-            <hr />
-
-            {!!preferencesLink && <ColumnLink transparent href={preferencesLink} icon='cog' iconComponent={SettingsIcon} text={intl.formatMessage(messages.preferences)} />}
-            <ColumnLink transparent onClick={onOpenSettings} icon='cogs' iconComponent={AdministrationIcon} text={intl.formatMessage(messages.app_settings)} />
-
-            {canManageReports(permissions) && <ColumnLink transparent href='/admin/reports' icon='flag' iconComponent={ModerationIcon} text={intl.formatMessage(messages.moderation)} />}
-            {canViewAdminDashboard(permissions) && <ColumnLink transparent href='/admin/dashboard' icon='tachometer' iconComponent={AdministrationIcon} text={intl.formatMessage(messages.administration)} />}
-          </>
-        )}
-
-        <div className='navigation-panel__legal'>
-          <hr />
-          <ColumnLink transparent to='/about' icon='ellipsis-h' iconComponent={MoreHorizIcon} text={intl.formatMessage(messages.about)} />
         </div>
+
+        <div className='flex-spacer' />
 
         <NavigationPortal />
       </div>

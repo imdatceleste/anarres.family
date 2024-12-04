@@ -17,7 +17,9 @@ RSpec.describe 'API V2 Filters Statuses' do
     it 'returns http success' do
       get "/api/v2/filters/#{filter.id}/statuses", headers: headers
       expect(response).to have_http_status(200)
-      expect(body_as_json)
+      expect(response.content_type)
+        .to start_with('application/json')
+      expect(response.parsed_body)
         .to contain_exactly(
           include(id: status_filter.id.to_s)
         )
@@ -27,6 +29,8 @@ RSpec.describe 'API V2 Filters Statuses' do
       it 'returns http not found' do
         get "/api/v2/filters/#{other_filter.id}/statuses", headers: headers
         expect(response).to have_http_status(404)
+        expect(response.content_type)
+          .to start_with('application/json')
       end
     end
   end
@@ -42,8 +46,10 @@ RSpec.describe 'API V2 Filters Statuses' do
 
     it 'creates a filter', :aggregate_failures do
       expect(response).to have_http_status(200)
+      expect(response.content_type)
+        .to start_with('application/json')
 
-      expect(body_as_json)
+      expect(response.parsed_body)
         .to include(
           status_id: status.id.to_s
         )
@@ -58,6 +64,8 @@ RSpec.describe 'API V2 Filters Statuses' do
 
       it 'returns http not found' do
         expect(response).to have_http_status(404)
+        expect(response.content_type)
+          .to start_with('application/json')
       end
     end
   end
@@ -72,8 +80,10 @@ RSpec.describe 'API V2 Filters Statuses' do
 
     it 'responds with the filter', :aggregate_failures do
       expect(response).to have_http_status(200)
+      expect(response.content_type)
+        .to start_with('application/json')
 
-      expect(body_as_json)
+      expect(response.parsed_body)
         .to include(
           status_id: status_filter.status.id.to_s
         )
@@ -98,6 +108,8 @@ RSpec.describe 'API V2 Filters Statuses' do
 
     it 'destroys the filter', :aggregate_failures do
       expect(response).to have_http_status(200)
+      expect(response.content_type)
+        .to start_with('application/json')
 
       expect { status_filter.reload }.to raise_error ActiveRecord::RecordNotFound
     end
@@ -107,6 +119,8 @@ RSpec.describe 'API V2 Filters Statuses' do
 
       it 'returns http not found' do
         expect(response).to have_http_status(404)
+        expect(response.content_type)
+          .to start_with('application/json')
       end
     end
   end

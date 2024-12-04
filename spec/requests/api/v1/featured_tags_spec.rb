@@ -22,6 +22,8 @@ RSpec.describe 'FeaturedTags' do
         get '/api/v1/featured_tags'
 
         expect(response).to have_http_status(401)
+        expect(response.content_type)
+          .to start_with('application/json')
       end
     end
 
@@ -29,6 +31,8 @@ RSpec.describe 'FeaturedTags' do
       get '/api/v1/featured_tags', headers: headers
 
       expect(response).to have_http_status(200)
+      expect(response.content_type)
+        .to start_with('application/json')
     end
 
     context 'when the requesting user has no featured tag' do
@@ -37,7 +41,7 @@ RSpec.describe 'FeaturedTags' do
       it 'returns an empty body' do
         get '/api/v1/featured_tags', headers: headers
 
-        expect(body_as_json).to be_empty
+        expect(response.parsed_body).to be_empty
       end
     end
 
@@ -47,7 +51,7 @@ RSpec.describe 'FeaturedTags' do
       it 'returns only the featured tags belonging to the requesting user' do
         get '/api/v1/featured_tags', headers: headers
 
-        expect(body_as_json.pluck(:id))
+        expect(response.parsed_body.pluck(:id))
           .to match_array(
             user_featured_tags.pluck(:id).map(&:to_s)
           )
@@ -58,16 +62,13 @@ RSpec.describe 'FeaturedTags' do
   describe 'POST /api/v1/featured_tags' do
     let(:params) { { name: 'tag' } }
 
-    it 'returns http success' do
+    it 'returns http success and includes correct tag name' do
       post '/api/v1/featured_tags', headers: headers, params: params
 
       expect(response).to have_http_status(200)
-    end
-
-    it 'returns the correct tag name' do
-      post '/api/v1/featured_tags', headers: headers, params: params
-
-      expect(body_as_json)
+      expect(response.content_type)
+        .to start_with('application/json')
+      expect(response.parsed_body)
         .to include(
           name: params[:name]
         )
@@ -94,6 +95,8 @@ RSpec.describe 'FeaturedTags' do
         post '/api/v1/featured_tags', params: params
 
         expect(response).to have_http_status(401)
+        expect(response.content_type)
+          .to start_with('application/json')
       end
     end
 
@@ -102,6 +105,8 @@ RSpec.describe 'FeaturedTags' do
         post '/api/v1/featured_tags', headers: headers
 
         expect(response).to have_http_status(400)
+        expect(response.content_type)
+          .to start_with('application/json')
       end
     end
 
@@ -112,6 +117,8 @@ RSpec.describe 'FeaturedTags' do
         post '/api/v1/featured_tags', headers: headers, params: params
 
         expect(response).to have_http_status(422)
+        expect(response.content_type)
+          .to start_with('application/json')
       end
     end
 
@@ -124,6 +131,8 @@ RSpec.describe 'FeaturedTags' do
         post '/api/v1/featured_tags', headers: headers, params: params
 
         expect(response).to have_http_status(422)
+        expect(response.content_type)
+          .to start_with('application/json')
       end
     end
   end
@@ -132,23 +141,15 @@ RSpec.describe 'FeaturedTags' do
     let!(:featured_tag) { FeaturedTag.create(name: 'tag', account: user.account) }
     let(:id) { featured_tag.id }
 
-    it 'returns http success' do
+    it 'returns http success with an empty body and deletes the featured tag', :inline_jobs do
       delete "/api/v1/featured_tags/#{id}", headers: headers
 
       expect(response).to have_http_status(200)
-    end
-
-    it 'returns an empty body' do
-      delete "/api/v1/featured_tags/#{id}", headers: headers
-
-      expect(body_as_json).to be_empty
-    end
-
-    it 'deletes the featured tag', :inline_jobs do
-      delete "/api/v1/featured_tags/#{id}", headers: headers
+      expect(response.content_type)
+        .to start_with('application/json')
+      expect(response.parsed_body).to be_empty
 
       featured_tag = FeaturedTag.find_by(id: id)
-
       expect(featured_tag).to be_nil
     end
 
@@ -165,6 +166,8 @@ RSpec.describe 'FeaturedTags' do
         delete "/api/v1/featured_tags/#{id}"
 
         expect(response).to have_http_status(401)
+        expect(response.content_type)
+          .to start_with('application/json')
       end
     end
 
@@ -173,6 +176,8 @@ RSpec.describe 'FeaturedTags' do
         delete '/api/v1/featured_tags/0', headers: headers
 
         expect(response).to have_http_status(404)
+        expect(response.content_type)
+          .to start_with('application/json')
       end
     end
 
@@ -184,6 +189,8 @@ RSpec.describe 'FeaturedTags' do
         delete "/api/v1/featured_tags/#{id}", headers: headers
 
         expect(response).to have_http_status(404)
+        expect(response.content_type)
+          .to start_with('application/json')
       end
     end
   end

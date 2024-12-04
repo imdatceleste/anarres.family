@@ -7,7 +7,7 @@ import { Helmet } from 'react-helmet';
 import { withRouter } from 'react-router-dom';
 
 import { createSelector } from '@reduxjs/toolkit';
-import Immutable from 'immutable';
+import { List as ImmutableList } from 'immutable';
 import ImmutablePropTypes from 'react-immutable-proptypes';
 import ImmutablePureComponent from 'react-immutable-pure-component';
 import { connect } from 'react-redux';
@@ -63,7 +63,7 @@ import Column from '../ui/components/column';
 import { attachFullscreenListener, detachFullscreenListener, isFullscreen } from '../ui/util/fullscreen';
 
 import ActionBar from './components/action_bar';
-import DetailedStatus from './components/detailed_status';
+import { DetailedStatus } from './components/detailed_status';
 
 
 const messages = defineMessages({
@@ -82,7 +82,7 @@ const makeMapStateToProps = () => {
     (_, { id }) => id,
     state => state.getIn(['contexts', 'inReplyTos']),
   ], (statusId, inReplyTos) => {
-    let ancestorsIds = Immutable.List();
+    let ancestorsIds = ImmutableList();
     ancestorsIds = ancestorsIds.withMutations(mutable => {
       let id = statusId;
 
@@ -129,14 +129,14 @@ const makeMapStateToProps = () => {
       });
     }
 
-    return Immutable.List(descendantsIds);
+    return ImmutableList(descendantsIds);
   });
 
   const mapStateToProps = (state, props) => {
     const status = getStatus(state, { id: props.params.statusId });
 
-    let ancestorsIds   = Immutable.List();
-    let descendantsIds = Immutable.List();
+    let ancestorsIds   = ImmutableList();
+    let descendantsIds = ImmutableList();
 
     if (status) {
       ancestorsIds   = getAncestorsIds(state, { id: status.get('in_reply_to_id') });

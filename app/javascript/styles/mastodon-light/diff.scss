@@ -108,17 +108,6 @@
   background: lighten($white, 4%);
 }
 
-// Change the background colors of status__content__spoiler-link
-.reply-indicator__content .status__content__spoiler-link,
-.status__content .status__content__spoiler-link {
-  background: $ui-base-color;
-
-  &:hover,
-  &:focus {
-    background: lighten($ui-base-color, 4%);
-  }
-}
-
 .account-gallery__item a {
   background-color: $ui-base-color;
 }
@@ -145,28 +134,6 @@
 
 .report-dialog-modal__container {
   border-top-color: lighten($ui-base-color, 4%);
-}
-
-// Change the background colors of modals
-.actions-modal,
-.boost-modal,
-.confirmation-modal,
-.mute-modal,
-.block-modal,
-.report-modal,
-.report-dialog-modal,
-.embed-modal,
-.error-modal,
-.onboarding-modal,
-.compare-history-modal,
-.report-modal__comment .setting-text__wrapper,
-.report-modal__comment .setting-text,
-.announcements,
-.picture-in-picture__header,
-.picture-in-picture__footer,
-.reactions-bar__item {
-  background: $white;
-  border: 1px solid var(--background-border-color);
 }
 
 .reactions-bar__item:hover,
@@ -196,14 +163,6 @@
 .icon-with-badge__badge {
   border-color: $white;
   color: $white;
-}
-
-.report-modal__comment {
-  border-right-color: lighten($ui-base-color, 8%);
-}
-
-.report-modal__container {
-  border-top-color: lighten($ui-base-color, 8%);
 }
 
 .column-settings__hashtags .column-select__option {
@@ -477,15 +436,24 @@
   color: lighten($ui-highlight-color, 8%);
 }
 
-.compose-form .autosuggest-textarea__textarea,
-.compose-form__highlightable,
-.autosuggest-textarea__suggestions,
-.search__input,
-.search__popout,
 .emoji-mart-search input,
 .language-dropdown__dropdown .emoji-mart-search input,
 .poll__option input[type='text'] {
   background: darken($ui-base-color, 10%);
+}
+
+.search__popout__menu__item {
+  &:hover,
+  &:active,
+  &:focus,
+  &.active {
+    color: $white;
+
+    mark,
+    .icon-button {
+      color: $white;
+    }
+  }
 }
 
 .inline-follow-suggestions {
@@ -564,4 +532,11 @@ a.sparkline {
 
 ::-webkit-scrollbar-thumb {
   opacity: 0.25;
+}
+
+.notification-group--annual-report {
+  .notification-group__icon,
+  .notification-group__main .link-button {
+    color: var(--indigo-3);
+  }
 }

@@ -372,26 +372,29 @@ class Status extends ImmutablePureComponent {
     const { isCollapsed } = this.state;
     if (!history) return;
 
-    if (e.button === 0 && !(e.ctrlKey || e.altKey || e.metaKey)) {
-      if (isCollapsed) this.setCollapsed(false);
-      else if (e.shiftKey) {
-        this.setCollapsed(true);
-        document.getSelection().removeAllRanges();
-      } else if (this.props.onClick) {
-        this.props.onClick();
-        return;
-      } else {
-        if (destination === undefined) {
-          destination = `/@${
-            status.getIn(['reblog', 'account', 'acct'], status.getIn(['account', 'acct']))
-          }/${
-            status.getIn(['reblog', 'id'], status.get('id'))
-          }`;
-        }
-        history.push(destination);
-      }
-      e.preventDefault();
+    if (e.button !== 0 || e.ctrlKey || e.altKey || e.metaKey) {
+      return;
     }
+
+    if (isCollapsed) this.setCollapsed(false);
+    else if (e.shiftKey) {
+      this.setCollapsed(true);
+      document.getSelection().removeAllRanges();
+    } else if (this.props.onClick) {
+      this.props.onClick();
+      return;
+    } else {
+      if (destination === undefined) {
+        destination = `/@${
+          status.getIn(['reblog', 'account', 'acct'], status.getIn(['account', 'acct']))
+        }/${
+          status.getIn(['reblog', 'id'], status.get('id'))
+        }`;
+      }
+      history.push(destination);
+    }
+
+    e.preventDefault();
   };
 
   handleToggleMediaVisibility = () => {
@@ -583,21 +586,22 @@ class Status extends ImmutablePureComponent {
 
     let prepend, rebloggedByText;
 
+    const connectUp = previousId && previousId === status.get('in_reply_to_id');
+    const connectToRoot = rootId && rootId === status.get('in_reply_to_id');
+    const connectReply = nextInReplyToId && nextInReplyToId === status.get('id');
+    const matchedFilters = status.get('matched_filters');
+
     if (hidden) {
       return (
         <HotKeys handlers={handlers} tabIndex={unfocusable ? null : -1}>
           <div ref={this.handleRef} className='status focusable' tabIndex={unfocusable ? null : 0}>
             <span>{status.getIn(['account', 'display_name']) || status.getIn(['account', 'username'])}</span>
-            <span>{status.get('content')}</span>
+            {status.get('spoiler_text').length > 0 && (<span>{status.get('spoiler_text')}</span>)}
+            {isExpanded && <span>{status.get('content')}</span>}
           </div>
         </HotKeys>
       );
     }
-
-    const connectUp = previousId && previousId === status.get('in_reply_to_id');
-    const connectToRoot = rootId && rootId === status.get('in_reply_to_id');
-    const connectReply = nextInReplyToId && nextInReplyToId === status.get('id');
-    const matchedFilters = status.get('matched_filters');
 
     if (this.state.forceFilter === undefined ? matchedFilters : this.state.forceFilter) {
       const minHandlers = this.props.muted ? {} : {
@@ -648,6 +652,27 @@ class Status extends ImmutablePureComponent {
             media={status.get('media_attachments')}
           />,
         );
+      } else if (['image', 'gifv', 'unknown'].includes(status.getIn(['media_attachments', 0, 'type'])) || status.get('media_attachments').size > 1) {
+        media.push(
+          <Bundle fetchComponent={MediaGallery} loading={this.renderLoadingMediaGallery}>
+            {Component => (
+              <Component
+                media={attachments}
+                lang={language}
+                sensitive={status.get('sensitive')}
+                letterbox={settings.getIn(['media', 'letterbox'])}
+                fullwidth={!rootId && settings.getIn(['media', 'fullwidth'])}
+                hidden={isCollapsed || !isExpanded}
+                onOpenMedia={this.handleOpenMedia}
+                cacheWidth={this.props.cacheMediaWidth}
+                defaultWidth={this.props.cachedMediaWidth}
+                visible={this.state.showMedia}
+                onToggleVisibility={this.handleToggleMediaVisibility}
+              />
+            )}
+          </Bundle>,
+        );
+        mediaIcons.push('picture-o');
       } else if (attachments.getIn([0, 'type']) === 'audio') {
         const attachment = status.getIn(['media_attachments', 0]);
         const description = attachment.getIn(['translation', 'description']) || attachment.get('description');
@@ -703,27 +728,6 @@ class Status extends ImmutablePureComponent {
           </Bundle>,
         );
         mediaIcons.push('video-camera');
-      } else {  //  Media type is 'image' or 'gifv'
-        media.push(
-          <Bundle fetchComponent={MediaGallery} loading={this.renderLoadingMediaGallery}>
-            {Component => (
-              <Component
-                media={attachments}
-                lang={language}
-                sensitive={status.get('sensitive')}
-                letterbox={settings.getIn(['media', 'letterbox'])}
-                fullwidth={!rootId && settings.getIn(['media', 'fullwidth'])}
-                hidden={isCollapsed || !isExpanded}
-                onOpenMedia={this.handleOpenMedia}
-                cacheWidth={this.props.cacheMediaWidth}
-                defaultWidth={this.props.cachedMediaWidth}
-                visible={this.state.showMedia}
-                onToggleVisibility={this.handleToggleMediaVisibility}
-              />
-            )}
-          </Bundle>,
-        );
-        mediaIcons.push('picture-o');
       }
 
       if (!status.get('sensitive') && !(status.get('spoiler_text').length > 0) && settings.getIn(['collapsed', 'backgrounds', 'preview_images'])) {
@@ -742,7 +746,7 @@ class Status extends ImmutablePureComponent {
 
     if (status.get('poll')) {
       const language = status.getIn(['translation', 'language']) || status.get('language');
-      contentMedia.push(<PollContainer pollId={status.get('poll')} lang={language} />);
+      contentMedia.push(<PollContainer pollId={status.get('poll')} status={status} lang={language} />);
       contentMediaIcons.push('tasks');
     }
 
@@ -806,7 +810,8 @@ class Status extends ImmutablePureComponent {
             {(connectReply || connectUp || connectToRoot) && <div className={classNames('status__line', { 'status__line--full': connectReply, 'status__line--first': !status.get('in_reply_to_id') && !connectToRoot })} />}
 
             {(!muted || !isCollapsed) && (
-              <header className='status__info'>
+              /* eslint-disable-next-line jsx-a11y/no-static-element-interactions */
+              <header onClick={this.parseClick} className='status__info'>
                 <StatusHeader
                   status={status}
                   friend={account}

@@ -45,6 +45,20 @@ RSpec.describe Mastodon::RedisConfiguration do
       it 'uses the url from the base config' do
         expect(subject[:url]).to eq 'redis://localhost:6379/0'
       end
+
+      context 'when the base config uses sentinel' do
+        around do |example|
+          ClimateControl.modify REDIS_SENTINELS: '192.168.0.1:3000,192.168.0.2:4000', REDIS_SENTINEL_MASTER: 'mainsentinel' do
+            example.run
+          end
+        end
+
+        it 'uses the sentinel configuration from base config' do
+          expect(subject[:url]).to eq 'redis://mainsentinel/0'
+          expect(subject[:name]).to eq 'mainsentinel'
+          expect(subject[:sentinels]).to contain_exactly({ host: '192.168.0.1', port: 3000 }, { host: '192.168.0.2', port: 4000 })
+        end
+      end
     end
 
     context "when the `#{prefix}_REDIS_URL` environment variable is present" do
@@ -68,6 +82,82 @@ RSpec.describe Mastodon::RedisConfiguration do
 
       it 'constructs the url from them' do
         expect(subject[:url]).to eq 'redis://:testpass1@redis2.example.com:3322/8'
+      end
+    end
+  end
+
+  shared_examples 'sentinel support' do |prefix = nil|
+    prefix = prefix ? "#{prefix}_" : ''
+
+    context 'when configuring sentinel support' do
+      around do |example|
+        ClimateControl.modify "#{prefix}REDIS_PASSWORD": 'testpass1', "#{prefix}REDIS_HOST": 'redis2.example.com', "#{prefix}REDIS_SENTINELS": '192.168.0.1:3000,192.168.0.2:4000', "#{prefix}REDIS_SENTINEL_MASTER": 'mainsentinel' do
+          example.run
+        end
+      end
+
+      it 'constructs the url using the sentinel master name' do
+        expect(subject[:url]).to eq 'redis://:testpass1@mainsentinel/0'
+      end
+
+      it 'uses the redis password to authenticate with sentinels' do
+        expect(subject[:sentinel_password]).to eq 'testpass1'
+      end
+
+      it 'includes the sentinel master name and list of sentinels' do
+        expect(subject[:name]).to eq 'mainsentinel'
+        expect(subject[:sentinels]).to contain_exactly({ host: '192.168.0.1', port: 3000 }, { host: '192.168.0.2', port: 4000 })
+      end
+
+      context "when giving dedicated credentials in `#{prefix}REDIS_SENTINEL_USERNAME` and `#{prefix}REDIS_SENTINEL_PASSWORD`" do
+        around do |example|
+          ClimateControl.modify "#{prefix}REDIS_SENTINEL_USERNAME": 'sentinel_user', "#{prefix}REDIS_SENTINEL_PASSWORD": 'sentinel_pass1' do
+            example.run
+          end
+        end
+
+        it 'uses the credential to authenticate with sentinels' do
+          expect(subject[:sentinel_username]).to eq 'sentinel_user'
+          expect(subject[:sentinel_password]).to eq 'sentinel_pass1'
+        end
+      end
+    end
+
+    context 'when giving sentinels without port numbers' do
+      context "when no default port is given via `#{prefix}REDIS_SENTINEL_PORT`" do
+        around do |example|
+          ClimateControl.modify "#{prefix}REDIS_SENTINELS": '192.168.0.1,192.168.0.2', "#{prefix}REDIS_SENTINEL_MASTER": 'mainsentinel' do
+            example.run
+          end
+        end
+
+        it 'uses the default sentinel port' do
+          expect(subject[:sentinels]).to contain_exactly({ host: '192.168.0.1', port: 26_379 }, { host: '192.168.0.2', port: 26_379 })
+        end
+      end
+
+      context 'when adding port numbers to some, but not all sentinels' do
+        around do |example|
+          ClimateControl.modify "#{prefix}REDIS_SENTINELS": '192.168.0.1:5678,192.168.0.2', "#{prefix}REDIS_SENTINEL_MASTER": 'mainsentinel' do
+            example.run
+          end
+        end
+
+        it 'uses the given port number when available and the default otherwise' do
+          expect(subject[:sentinels]).to contain_exactly({ host: '192.168.0.1', port: 5678 }, { host: '192.168.0.2', port: 26_379 })
+        end
+      end
+
+      context "when a default port is given via `#{prefix}REDIS_SENTINEL_PORT`" do
+        around do |example|
+          ClimateControl.modify "#{prefix}REDIS_SENTINEL_PORT": '1234', "#{prefix}REDIS_SENTINELS": '192.168.0.1,192.168.0.2', "#{prefix}REDIS_SENTINEL_MASTER": 'mainsentinel' do
+            example.run
+          end
+        end
+
+        it 'uses the given port number' do
+          expect(subject[:sentinels]).to contain_exactly({ host: '192.168.0.1', port: 1234 }, { host: '192.168.0.2', port: 1234 })
+        end
       end
     end
   end
@@ -119,6 +209,7 @@ RSpec.describe Mastodon::RedisConfiguration do
 
     include_examples 'setting a different driver'
     include_examples 'setting a namespace'
+    include_examples 'sentinel support'
   end
 
   describe '#sidekiq' do
@@ -127,6 +218,7 @@ RSpec.describe Mastodon::RedisConfiguration do
     include_examples 'secondary configuration', 'SIDEKIQ'
     include_examples 'setting a different driver'
     include_examples 'setting a namespace'
+    include_examples 'sentinel support', 'SIDEKIQ'
   end
 
   describe '#cache' do
@@ -166,5 +258,6 @@ RSpec.describe Mastodon::RedisConfiguration do
 
     include_examples 'secondary configuration', 'CACHE'
     include_examples 'setting a different driver'
+    include_examples 'sentinel support', 'CACHE'
   end
 end

@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-describe 'API V1 Statuses Reblogs' do
+RSpec.describe 'API V1 Statuses Reblogs' do
   let(:user)  { Fabricate(:user) }
   let(:token) { Fabricate(:accessible_access_token, resource_owner_id: user.id, scopes: scopes) }
   let(:scopes)  { 'write:statuses' }
@@ -19,12 +19,14 @@ describe 'API V1 Statuses Reblogs' do
       context 'with public status' do
         it 'reblogs the status', :aggregate_failures do
           expect(response).to have_http_status(200)
+          expect(response.content_type)
+            .to start_with('application/json')
 
           expect(status.reblogs.count).to eq 1
 
           expect(user.account.reblogged?(status)).to be true
 
-          expect(body_as_json)
+          expect(response.parsed_body)
             .to include(
               reblog: include(
                 id: status.id.to_s,
@@ -40,6 +42,8 @@ describe 'API V1 Statuses Reblogs' do
 
         it 'returns http not found' do
           expect(response).to have_http_status(404)
+          expect(response.content_type)
+            .to start_with('application/json')
         end
       end
     end
@@ -55,12 +59,14 @@ describe 'API V1 Statuses Reblogs' do
 
         it 'destroys the reblog', :aggregate_failures do
           expect(response).to have_http_status(200)
+          expect(response.content_type)
+            .to start_with('application/json')
 
           expect(status.reblogs.count).to eq 0
 
           expect(user.account.reblogged?(status)).to be false
 
-          expect(body_as_json)
+          expect(response.parsed_body)
             .to include(
               id: status.id.to_s,
               reblogs_count: 0,
@@ -80,12 +86,14 @@ describe 'API V1 Statuses Reblogs' do
 
         it 'destroys the reblog', :aggregate_failures do
           expect(response).to have_http_status(200)
+          expect(response.content_type)
+            .to start_with('application/json')
 
           expect(status.reblogs.count).to eq 0
 
           expect(user.account.reblogged?(status)).to be false
 
-          expect(body_as_json)
+          expect(response.parsed_body)
             .to include(
               id: status.id.to_s,
               reblogs_count: 0,
@@ -103,6 +111,8 @@ describe 'API V1 Statuses Reblogs' do
 
         it 'returns http not found' do
           expect(response).to have_http_status(404)
+          expect(response.content_type)
+            .to start_with('application/json')
         end
       end
     end

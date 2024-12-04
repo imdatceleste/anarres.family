@@ -15,6 +15,12 @@ fi:
       user/invite_request:
         text: Syy
     errors:
+      attributes:
+        domain:
+          invalid: ei ole kelvollinen verkkotunnus
+      messages:
+        invalid_domain_on_line: "%{value} ei ole kelvollinen verkkotunnus"
+        too_many_lines: ylittää %{limit} rivin rajan
       models:
         account:
           attributes:
@@ -33,6 +39,11 @@ fi:
           attributes:
             data:
               malformed: on väärin muodostettu
+        list_account:
+          attributes:
+            account_id:
+              taken: on jo listassa
+          must_be_following: on oltava seurattu tili
         status:
           attributes:
             reblog:
