@@ -1192,6 +1192,7 @@ zh-TW:
     too_fast: 送出表單的速度太快跟不上，請稍後再試。
     use_security_key: 使用安全金鑰
     user_agreement_html: 我已閱讀並同意 <a href="%{terms_of_service_path}" target="_blank">服務條款</a> 與 <a href="%{privacy_policy_path}" target="_blank">隱私權政策</a>
+    user_privacy_agreement_html: 我已閱讀並同意 <a href="%{privacy_policy_path}" target="_blank">隱私權政策</a>
   author_attribution:
     example_title: 範例文字
     hint_html: 您是否正於 Mastodon 之外撰寫新聞或部落格文章？控制當它們於 Mastodon 上分享時您如何獲得信譽。
@@ -1894,8 +1895,6 @@ zh-TW:
     terms_of_service_changed:
       agreement: 透過繼續使用 %{domain}，您將同意這些條款。若您不同意此條款異動，您能隨時終止與 %{domain} 之協議並刪除您的帳號。
       changelog: 簡而言之，此次更新對您將意味著：
-      description: 您收到此 e-mail 係因我們正在更新 %{domain} 之服務條款。我們鼓勵您審視此處之服務條款更新全文：
-      description_html: 您收到此 e-mail 係因我們正在更新 %{domain} 之服務條款。我們鼓勵您審視 <a href="%{path}" target="_blank">此處之服務條款更新全文</a>。
       sign_off: "%{domain} 團隊"
       subject: 我們的服務條款更新
       subtitle: "%{domain} 之服務條款正在悄悄發生變化"

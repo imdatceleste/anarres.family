@@ -1209,6 +1209,7 @@ es-AR:
     too_fast: Formulario enviado demasiado rápido, probá de nuevo.
     use_security_key: Usar la llave de seguridad
     user_agreement_html: Leí y acepto los <a href="%{terms_of_service_path}" target="_blank">términos del servicio</a> y la <a href="%{privacy_policy_path}" target="_blank">política de privacidad</a>
+    user_privacy_agreement_html: Leí y acepto la <a href="%{privacy_policy_path}" target="_blank">política de privacidad</a>
   author_attribution:
     example_title: Texto de ejemplo
     hint_html: "¿Escribís artículos de noticias o de blog fuera de Mastodon? Controlá cómo se te acredita cuando se comparten en Mastodon."
@@ -1935,8 +1936,6 @@ es-AR:
     terms_of_service_changed:
       agreement: Si seguís usando %{domain}, aceptás estos términos. Si no estás de acuerdo con los términos actualizados, podés cancelar tu acuerdo con %{domain} en cualquier momento, eliminando tu cuenta.
       changelog: 'A modo de pantallazo general, esto es lo que esta actualización significa para vos:'
-      description: 'Estás recibiendo este correo electrónico porque estamos haciendo algunos cambios en nuestros términos del servicio en %{domain}. Te animamos a revisar los términos actualizados en su totalidad acá:'
-      description_html: Estás recibiendo este correo electrónico porque estamos haciendo algunos cambios en nuestros términos del servicio en %{domain}. Te animamos a revisar los <a href="%{path}" target="_blank">términos actualizados en su totalidad acá</a>.
       sign_off: El equipo de %{domain}
       subject: Actualizaciones en nuestros términos del servicio
       subtitle: Los términos del servicio de %{domain} están cambiando

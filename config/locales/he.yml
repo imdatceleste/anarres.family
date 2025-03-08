@@ -1247,6 +1247,7 @@ he:
     too_fast: הטופס הוגש מהר מדי, נסה/י שוב.
     use_security_key: שימוש במפתח אבטחה
     user_agreement_html: קראתי וזו הסכמתי למסמך <a href="%{terms_of_service_path}" target="_blank">תנאי השירות</a> ו<a href="%{privacy_policy_path}" target="_blank">מדיניות הפרטיות</a>
+    user_privacy_agreement_html: קראתי והסכמתי ל<a href="%{privacy_policy_path}" target="_blank">מדיניות הפרטיות</a>
   author_attribution:
     example_title: טקסט לדוגמה
     hint_html: האם יש לך בלוג או טור חדשות שמתפרסם מחוץ למסטודון? ניתן לשלוט איך יוצג הקרדיט שלך כשמשתפים את הלינק במסטודון.
@@ -2021,8 +2022,6 @@ he:
     terms_of_service_changed:
       agreement: עם המשך השימוש בשרת %{domain} אתן מסכימות לתנאים הללו. אם אינכם מסכימים עם עדכוני תנאי השירות, אתן יכולות להפסיק את ההסכם עם %{domain} בכל עת על ידי מחיקת החשבון.
       changelog: 'בקצרה, הנה משמעות העדכון עבורך:'
-      description: 'קיבלת הודעת דואל זו כיוון שאנו מבצעים שינויים במסמך תנאי השירות של %{domain}. אנו מעודדים אותך לעבור על השינויים במסמך המלא כאן:'
-      description_html: 'קיבלת הודעת דואל זו כיוון שאנו מבצעים שינויים במסמך תנאי השירות של %{domain}. אנו מעודדים אותך לעבור על <a href="%{path}" target="_blank">השינויים במסמך המלא כאן</a>:'
       sign_off: צוות %{domain}
       subject: עדכונים לתנאי השירות שלנו
       subtitle: מסמך תנאי השירות של %{domain} עוברים שינויים
