@@ -148,6 +148,8 @@ export const PollForm = () => {
           { value: 86400, label: intl.formatMessage(messages.days, { number: 1 })},
           { value: 259200, label: intl.formatMessage(messages.days, { number: 3 })},
           { value: 604800, label: intl.formatMessage(messages.days, { number: 7 })},
+          { value: 864000, label: intl.formatMessage(messages.days, { number: 10 })},
+          { value: 1209600, label: intl.formatMessage(messages.days, { number: 14 })},
         ]} value={expiresIn} onChange={handleDurationChange} />
 
         <div className='compose-form__poll__footer__sep' />
