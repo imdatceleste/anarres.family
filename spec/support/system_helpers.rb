@@ -1,10 +1,6 @@
 # frozen_string_literal: true
 
 module SystemHelpers
-  def admin_user
-    Fabricate(:user, role: UserRole.find_by(name: 'Admin'))
-  end
-
   def submit_button
     I18n.t('generic.save_changes')
   end

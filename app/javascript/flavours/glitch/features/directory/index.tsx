@@ -18,15 +18,15 @@ import {
   fetchDirectory,
   expandDirectory,
 } from 'flavours/glitch/actions/directory';
-import Column from 'flavours/glitch/components/column';
+import { Column } from 'flavours/glitch/components/column';
+import type { ColumnRef } from 'flavours/glitch/components/column';
 import { ColumnHeader } from 'flavours/glitch/components/column_header';
 import { LoadMore } from 'flavours/glitch/components/load_more';
 import { LoadingIndicator } from 'flavours/glitch/components/loading_indicator';
 import { RadioButton } from 'flavours/glitch/components/radio_button';
 import ScrollContainer from 'flavours/glitch/containers/scroll_container';
+import { useSearchParam } from 'flavours/glitch/hooks/useSearchParam';
 import { useAppDispatch, useAppSelector } from 'flavours/glitch/store';
-
-import { useSearchParam } from '../../hooks/useSearchParam';
 
 import { AccountCard } from './components/account_card';
 
@@ -52,7 +52,7 @@ export const Directory: React.FC<{
   const intl = useIntl();
   const dispatch = useAppDispatch();
 
-  const column = useRef<Column>(null);
+  const column = useRef<ColumnRef>(null);
 
   const [orderParam, setOrderParam] = useSearchParam('order');
   const [localParam, setLocalParam] = useSearchParam('local');
