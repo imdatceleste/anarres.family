@@ -1,13 +1,4 @@
 # See http://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
-User-agent: *
-Disallow: /media_proxy/
-Disallow: /interact/
-Disallow: /api/v1/trends/
-Disallow: /api/v1/timelines/
-Disallow: /auth/
-Disallow: /tags/
-Disallow: /cache/
-
 User-agent: AI2Bot
 User-agent: Ai2Bot-Dolma
 User-agent: Amazonbot
@@ -75,3 +66,7 @@ Disallow: /
 User-agent: WellKnownBot
 Disallow: /
 
+User-agent: *
+Disallow: /media_proxy/
+Disallow: /interact/
+Disallow: /api/v1/instance/domain_blocks/
