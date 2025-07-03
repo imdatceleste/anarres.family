@@ -3,11 +3,11 @@
 
 // Commonly used web colors
 $black: #000; // Black
-$white: #fff; // White
+$white: #FFEDFF; // White
 $red-600: #b7253d !default; // Deep Carmine
 $red-500: #df405a !default; // Cerise
 $blurple-600: #BF30BF; // Pink
-$blurple-500: #E53AE5; // Brand pink
+$blurple-500: #B200B2; // Brand pink
 $blurple-400: #CC34CC; // Other pink
 $blurple-300: #B22DB2; // Another pink
 $grey-600: hsl(240deg, 8%, 33%); // Trout
@@ -16,12 +16,12 @@ $grey-100: hsl(240deg, 51%, 90%); // Topaz
 $success-green: #79bd9a !default; // Padua
 $error-red: $red-500 !default; // Cerise
 $warning-red: #ff5050 !default; // Sunset Orange
-$gold-star: #ca8f04 !default; // Dark Goldenrod
+$gold-star: #CCA604 !default; // Gold
 
 $red-bookmark: $warning-red;
 
 // Values from the classic Mastodon UI
-$classic-base-color: hsl(300deg, 75%, 10%);
+$classic-base-color: hsl(300deg, 95%, 10%);
 $classic-primary-color: hsl(300deg, 50%, 70%);
 $classic-secondary-color: hsl(300deg, 10%, 80%);
 $classic-highlight-color: $blurple-500;
