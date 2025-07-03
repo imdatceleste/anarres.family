@@ -6,10 +6,10 @@ $black: #000; // Black
 $white: #fff; // White
 $red-600: #b7253d !default; // Deep Carmine
 $red-500: #df405a !default; // Cerise
-$blurple-600: #BF30BF; // Pink
-$blurple-500: #E53AE5; // Brand pink
-$blurple-400: #CC34CC; // Other pink
-$blurple-300: #B22DB2; // Another pink
+$blurple-600: #563acc; // Iris
+$blurple-500: #6364ff; // Brand purple
+$blurple-400: #7477fd; // Medium slate blue
+$blurple-300: #858afa; // Faded Blue
 $grey-600: hsl(240deg, 8%, 33%); // Trout
 $grey-100: hsl(240deg, 51%, 90%); // Topaz
 
@@ -21,9 +21,9 @@ $gold-star: #ca8f04 !default; // Dark Goldenrod
 $red-bookmark: $warning-red;
 
 // Values from the classic Mastodon UI
-$classic-base-color: hsl(300deg, 75%, 10%);
-$classic-primary-color: hsl(300deg, 50%, 70%);
-$classic-secondary-color: hsl(300deg, 10%, 80%);
+$classic-base-color: hsl(240deg, 16%, 19%);
+$classic-primary-color: hsl(240deg, 29%, 70%);
+$classic-secondary-color: hsl(255deg, 25%, 88%);
 $classic-highlight-color: $blurple-500;
 
 // Variables for defaults in UI
@@ -75,7 +75,7 @@ $primary-text-color: $white !default;
 $darker-text-color: $ui-primary-color !default;
 $dark-text-color: $ui-base-lighter-color !default;
 $secondary-text-color: $ui-secondary-color !default;
-$highlight-text-color: $ui-base-lighter-color !default;
+$highlight-text-color: lighten($ui-highlight-color, 8%) !default;
 $action-button-color: $ui-base-lighter-color !default;
 $action-button-focus-color: lighten($ui-base-lighter-color, 4%) !default;
 $passive-text-color: $gold-star !default;
