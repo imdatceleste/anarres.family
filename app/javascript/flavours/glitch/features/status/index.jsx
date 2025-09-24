@@ -216,7 +216,6 @@ class Status extends ImmutablePureComponent {
       dispatch(openModal({
         modalType: 'INTERACTION',
         modalProps: {
-          type: 'favourite',
           accountId: status.getIn(['account', 'id']),
           url: status.get('uri'),
         },
@@ -246,7 +245,6 @@ class Status extends ImmutablePureComponent {
       dispatch(openModal({
         modalType: 'INTERACTION',
         modalProps: {
-          type: 'reply',
           accountId: status.getIn(['account', 'id']),
           url: status.get('uri'),
         },
@@ -264,7 +262,6 @@ class Status extends ImmutablePureComponent {
       dispatch(openModal({
         modalType: 'INTERACTION',
         modalProps: {
-          type: 'reblog',
           accountId: status.getIn(['account', 'id']),
           url: status.get('uri'),
         },
@@ -626,7 +623,7 @@ class Status extends ImmutablePureComponent {
             {ancestors}
 
             <Hotkeys handlers={handlers}>
-              <div className={classNames('focusable', 'detailed-status__wrapper', `detailed-status__wrapper-${status.get('visibility')}`)} tabIndex={0} aria-label={textForScreenReader(intl, status, false, isExpanded)} ref={this.setStatusRef}>
+              <div className={classNames('focusable', 'detailed-status__wrapper', `detailed-status__wrapper-${status.get('visibility')}`)} tabIndex={0} aria-label={textForScreenReader({intl, status, expanded: isExpanded})} ref={this.setStatusRef}>
                 <DetailedStatus
                   key={`details-${status.get('id')}`}
                   status={status}
